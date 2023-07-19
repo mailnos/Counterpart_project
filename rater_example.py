@@ -9,6 +9,8 @@ from operator import concat
 import pandas as pd
 import numpy as np
 from scipy.interpolate import interp1d
+import math
+import openpyxl
 
 def rater(json_input):
     asset_size = [ 1, 1000000, 2500000, 5000000, 10000000, 15000000, 20000000, 25000000, 50000000, 75000000, 100000000, 250000000]
@@ -51,9 +53,6 @@ def rater(json_input):
     industry_f = industry_dict[json_input["Industry"]]
 
     result = round(rate_f * (limit_f - retention_f) * industry_f * 1.7,0)
-
-    if  json_input["Asset Size"] < json_input["Limit"] :
-        result = "The price is: "+ str(result) + ", however please note that your limit is greater than your asset size"
 
     return result
 
