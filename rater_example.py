@@ -17,11 +17,13 @@ import os
 def main():
     print("printing from main "+str(rater({'Asset Size': 1200000, 'Limit': 5000000, 'Retention': 1000000,'Industry': 'Hazard Group 2'})))
 
-
 def rater(json_input):
 
     #data_load()
-    data_orig = pd.read_excel(r"Case_Study_Data.xlsx", "Rating Tables" )
+    try:
+        data_orig = pd.read_excel(r"Case_Study_Data.xlsx", "Rating Tables" )
+    except:
+        return "Please make sure the Excel Data File is in the working direcoty"
 
     #split out asset size data into df
     asset_size_df = data_orig.iloc[6:18,2:4]
@@ -56,7 +58,6 @@ def rater(json_input):
     0.452, 0.491, 0.525, 0.555, 0.581, 0.605, 0.627, 0.648, 0.666, 0.684, 0.7, 0.715, 0.73, 0.743, 0.756, 0.807,
     0.819, 0.831, 0.842, 0.853, 0.864, 0.874, 0.883, 0.893, 0.902, 0.91, 0.919, 0.927, 0.935, 0.943, 0.95, 0.957,
     0.964, 0.971, 1, 1.415,  1.526, 1.637, 1.82, 1.986]
-
     
     industry_dict = {"Hazard Group 1": 1, "Hazard Group 2": 1.25, "Hazard Group 3": 1.5}
     """
@@ -90,7 +91,6 @@ def rater(json_input):
     return result
 
 if __name__=="__main__":
-    
     main()
   
 
