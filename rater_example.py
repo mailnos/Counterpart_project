@@ -11,8 +11,39 @@ import numpy as np
 from scipy.interpolate import interp1d
 import math
 import openpyxl
+import os
+
+
+def main():
+    print("printing from main "+str(rater({'Asset Size': 1200000, 'Limit': 5000000, 'Retention': 1000000,'Industry': 'Hazard Group 2'})))
+
 
 def rater(json_input):
+
+    #data_load()
+    data_orig = pd.read_excel(r"Case_Study_Data.xlsx", "Rating Tables" )
+
+    #split out asset size data into df
+    asset_size_df = data_orig.iloc[6:18,2:4]
+    asset_size_df.columns = ["asset_size","base_rate"]
+    asset_size_df = asset_size_df.astype(float)
+
+    limit_df = data_orig.iloc[20:74,2:4]
+    limit_df.columns = ["limit","factor"]
+    limit_df = limit_df.astype(float)
+    
+    industry_df = data_orig.iloc[77:80,2:4]
+    industry_df.columns = ["hazard_group","factor"]
+
+    asset_size = asset_size_df["asset_size"].values.tolist()
+    base_rate = asset_size_df["base_rate"].values.tolist()
+
+    limit = limit_df["limit"].values.tolist()
+    factor = limit_df["factor"].values.tolist()
+
+    industry_dict = industry_df.set_index("hazard_group")["factor"].to_dict()
+
+    """
     asset_size = [ 1, 1000000, 2500000, 5000000, 10000000, 15000000, 20000000, 25000000, 50000000, 75000000, 100000000, 250000000]
     base_rate = [ 1065, 1819, 3966, 3619, 4291, 4905, 5120, 5499, 6279, 6966, 7156, 8380]
 
@@ -26,7 +57,9 @@ def rater(json_input):
     0.819, 0.831, 0.842, 0.853, 0.864, 0.874, 0.883, 0.893, 0.902, 0.91, 0.919, 0.927, 0.935, 0.943, 0.95, 0.957,
     0.964, 0.971, 1, 1.415,  1.526, 1.637, 1.82, 1.986]
 
+    
     industry_dict = {"Hazard Group 1": 1, "Hazard Group 2": 1.25, "Hazard Group 3": 1.5}
+    """
 
     #error handling    
     if  json_input["Asset Size"] < 1:
@@ -55,5 +88,11 @@ def rater(json_input):
     result = round(rate_f * (limit_f - retention_f) * industry_f * 1.7,0)
 
     return result
+
+if __name__=="__main__":
+    
+    main()
+  
+
 
  
