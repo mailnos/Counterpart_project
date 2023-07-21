@@ -3,6 +3,10 @@ title: counterpart case study
 author: liam watson
 date: 07/16/2023
 version: 1
+open items: 
+    1. project asset size and limit curve further out
+    2. improve/clean up rating table load
+    3. play around with GUI using CustomTKinter
 """
 
 from operator import concat
@@ -21,7 +25,9 @@ def interpolate(xval, df, xcol, ycol):
 # compute linear interp of x val in df - df is expected to be sorted
     return np.interp([xval], df[xcol], df[ycol])[0]
 
-def data_load():
+
+def manual_load():
+    # if error with excel load use the manual data load below. Would not use in practice
     asset_size = [ 1, 1000000, 2500000, 5000000, 10000000, 15000000, 20000000, 25000000, 50000000, 75000000, 100000000, 250000000]
     
     base_rate = [ 1065, 1819, 3966, 3619, 4291, 4905, 5120, 5499, 6279, 6966, 7156, 8380]
@@ -45,32 +51,32 @@ def data_load():
 
     return asset_size_df, limit_df, industry_dict
 
+def excel_load():
+    data_orig = pd.read_excel(r"Case_Study_Data.xlsx", "Rating Tables" )
+        
+    #split out asset size, limit and industry data into df
+    asset_size_df = data_orig.iloc[6:18,2:4]
+    asset_size_df.columns = ["asset_size","base_rate"]
+    asset_size_df = asset_size_df.astype(float)
 
+    limit_df = data_orig.iloc[20:74,2:4]
+    limit_df.columns = ["limit","factor"]
+    limit_df = limit_df.astype(float)
+    
+    industry_df = data_orig.iloc[77:80,2:4]
+    industry_df.columns = ["hazard_group","factor"]
+    industry_dict = industry_df.set_index("hazard_group")["factor"].to_dict()
 
+    return asset_size_df, limit_df, industry_dict
 
 def rater(json_input):
 
-    #data_load()
-
     # test if data load is successful, prompt used to have excel file in the same directory if not
     try:
-        data_orig = pd.read_excel(r"Case_Study_Data.xlsx", "Rating Tables" )
-        
-        #split out asset size, limit and industry data into df
-        asset_size_df = data_orig.iloc[6:18,2:4]
-        asset_size_df.columns = ["asset_size","base_rate"]
-        asset_size_df = asset_size_df.astype(float)
-
-        limit_df = data_orig.iloc[20:74,2:4]
-        limit_df.columns = ["limit","factor"]
-        limit_df = limit_df.astype(float)
-        
-        industry_df = data_orig.iloc[77:80,2:4]
-        industry_df.columns = ["hazard_group","factor"]
-        industry_dict = industry_df.set_index("hazard_group")["factor"].to_dict()
+        asset_size_df, limit_df, industry_dict = excel_load()
     
     except:
-        asset_size_df, limit_df, industry_dict = data_load()
+        asset_size_df, limit_df, industry_dict = manual_load()
         print("There was a data load exception, please check that rating table is in the working directory")
             
     #error handling    
@@ -89,7 +95,7 @@ def rater(json_input):
     elif json_input["Retention"] >  5000000:
         return  "Please reach out to actuary for high excess account pricing"
 
-    #straight line interpolate values if they are in the 
+    #straight line interpolate values if they are in the given ranges
     rate_f = interpolate(json_input["Asset Size"],asset_size_df, "asset_size", "base_rate" )
     limit_f = interpolate(json_input["Limit"],limit_df, "limit", "factor" )
     retention_f = interpolate(json_input["Retention"],limit_df, "limit", "factor" )
